@@ -4,77 +4,133 @@ const padZ = document.getElementById("PADZ");
 const padX = document.getElementById("PADX");
 const boton1 = document.getElementById("botonComenzar");
 const status = document.querySelector("#status");
+let secuenciaMaquina = []
+let secuenciaJugador = []
+let ronda = 1;
 
-boton1.onclick = function(event){
-    //tomar nombre usuario
+
+boton1.onclick = function () {
+    actualizarDisplay();
+    cambiarBoton("reset");
+    iniciarRonda(ronda);
+
+}
+function actualizarDisplay() {
     const status = document.querySelector("#status");
     const nombre = status.lastElementChild.value;
     const display = document.getElementById("status");
     display.innerText = `Muy bien, ${nombre}! Presta atención al orden en el que aprieta la computadora!`;
-    //mostrar boton reset
-    cambiarBoton("reset")
-    //llamar comenzarjuego
-    event.preventDefault();
 }
-function comenzarJuego(){
-    let ronda = 1;
-    //generar random
-    //mostrarrandom con 1 segundo entre elemento y elemento
-    //cambiar display a "la computadora esta jugando o algo asi"
+function iniciarRonda(ronda) {
+    const array = generarRandom(ronda)
+    jugadaComputadora(array);
+    setTimeout(() => {
+        escucharUsuario();
+        const display = document.getElementById("status");
+        display.innerText = `Ahora es tu turno!`;
+    }, 1000 * (array.length + 4));
     //escucharAlUsuario
     //if pierde display perdiste!
     //if gana ejecutar generar random con + dificultad
 }
 
-function generarRandom(input){
+function generarRandom(input) {
     const array = [];
-    const ronda = input;
-    while(ronda>0){
-    const random = Math.random()*4;
-    array.push(random)
-    ronda=ronda-1
+    let ronda = input;
+    for (ronda; ronda > 0; ronda--) {
+        const numero = Math.floor(Math.random() * 4);
+        switch (numero) {
+            case 1:
+                array.push("PADA")
+                break;
+            case 2:
+                array.push("PADS")
+                break;
+            case 3:
+                array.push("PADZ")
+                break;
+            default:
+                array.push("PADX")
+        }
     };
+    console.log(array);
+    secuenciaMaquina = array;
     return array
 }
 
-/*boton1.onclick = function (event) {
-    const display = document.getElementById("status");
-    display.textContent = "Ingresa tu nombre!";
-    const inputNombre = document.createElement("input");
-    inputNombre.type = "text"
-    inputNombre.placeholder = "Jugador";
-    inputNombre.name = "nombre";
-    cambiarBoton("iniciarJuego", "Estoy listo")
-    display.appendChild(inputNombre);
-    event.preventDefault();
-};
-*/
-function cambiarBoton(nombre){
+function jugadaComputadora(array) {
+    array.forEach((cuadro, i) => {
+        window.setTimeout(() => {
+            resaltar(cuadro);
+        }, 750 * (i + 4));
+    })
+}
+
+function cambiarBoton(nombre) {
     const contenedorDisplaysYBoton = document.querySelector("#DisplaysYBoton");
-    const botonAnterior = document.querySelector("#botonComenzar");    
+    const botonAnterior = document.querySelector("#botonComenzar");
     contenedorDisplaysYBoton.removeChild(botonAnterior);
     const boton = document.createElement("button");
     boton.id = nombre;
-    boton.className = "col-md-4 p-4 button";    
-//<--- arreglar
+    boton.className = "col-md-4 p-4 button";
     contenedorDisplaysYBoton.appendChild(boton);
-    countdown(["1", "2", "3", "YA!", "Reiniciar"])
+    countdown(["1", "2", "3", "YA!", "Reiniciar"]) //<--este countdown no puede estar aca
 }
 
-function countdown(texto){
-    //esta funcion tiene que ser mejorada cuando tenga mejores conocimientos de async/await.
+function countdown(texto) {
     const boton = document.getElementById("reset");
-    texto.forEach((text, i) => {        
+    texto.forEach((text, i) => {
         window.setTimeout(() => {
-        boton.textContent = text;
-    }, 750 * i+1);})}
-/*
-const iniciarJuego = document.querySelector("#iniciarJuego");
-iniciarJuego.onclick = function (event){
-    const inputNombre = document.querySelector("nombre").value;
-    console.log(inputNombre)
-    event.preventDefault();
+            boton.textContent = text;
+        }, 750 * i + 1);
+    })
 }
+function resaltar(cuadro) {
+    const pulsado = cuadro;
+    const pad = document.getElementById(pulsado);
+    pad.className = "col-sm cuadro pulsado"
+    window.setTimeout(() => {
+        pad.className = "col-sm cuadro"
+    }, 750);
+}
+function manejarInput(e) {
+    const cuadro = e.target;
+    const cuadroID = cuadro.id
+    resaltar(cuadroID);
+    e.preventDefault;
+    secuenciaJugador.push(cuadroID);
+    checkearIgualdad(cuadroID);
+}
+function escucharUsuario() {
+    document.querySelectorAll('.cuadro').forEach(function (cuadro) {
+        cuadro.onclick = manejarInput;
+    }
+    )
 
-//funcion que cree un array con las puezas a tocar.
+    /*const $cuadroMaquina = secuenciaMaquina[secuenciaUsuario.length - 1];
+    if ($cuadro.id !== $cuadroMaquina.id) {
+      perder();
+      return;
+    }
+
+    if (secuenciaUsuario.length === secuenciaMaquina.length) {
+      bloquearInputUsuario();
+      setTimeout(manejarRonda, 1000);
+    }
+  }*/
+}
+function checkearIgualdad(cuadroID){
+    const cuadroMaquina = secuenciaMaquina[secuenciaJugador.length - 1];
+    if (cuadroID !== cuadroMaquina) {
+      console.log("perdiste");
+      return;
+    }
+    if (secuenciaJugador.length === secuenciaMaquina.length) {
+      setTimeout(iniciarRonda, 1000, ronda+1);
+    }
+  }
+
+
+/*
+funcion que cree un array con las puezas a tocar.
 //function*/
